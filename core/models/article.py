@@ -8,13 +8,11 @@ class Article(db.Model):
     title = db.Column(db.String(100), nullable=False, unique= True)
     content = db.Column(db.Text, nullable=False)
     author_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    author = db.relationship('User', back_populates='articles')
+    recently_viewed_articles = db.relationship('RecentlyViewedArticle', backref='article', lazy=True)
 
     def __repr__(self):
         return f"<Article {self.title}>"
-    
-    @classmethod
-    def get_articles_by_author(cls, author_id):
-        return cls.query.filter(cls.author_id == author_id).all()
     
     @classmethod
     def get(cls, article_id, author_id):
@@ -37,7 +35,6 @@ class Article(db.Model):
         db.session.commit()
 
     def edit(self, payload, author_id):
-        
         # Check for title conflict with other articles by the same author
         title = payload.title
         existing_article = Article.query.filter(

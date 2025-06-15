@@ -1,9 +1,12 @@
 from flask import Blueprint, request
 from core import db
-from schema import ArticleSchema, ArticleCreateSchema, ArticleUpdateSchema, ArticleIdSchema
+from schema import ArticleSchema, ArticleCreateSchema, ArticleUpdateSchema, ArticleIdSchema, RecentlyViewedArticleSchema
 from core.models.article import Article
 from core.models.user import User
+from core.models.recently_viewed_article import RecentlyViewedArticle
 from response import APIResponse
+
+RECENTLY_VIEWED_ARTICLES_LIMIT = 10
 
 article_resource = Blueprint('article_resource', __name__)
 
@@ -11,8 +14,8 @@ article_resource = Blueprint('article_resource', __name__)
 @article_resource.route('/', methods=['GET'])
 def get_all_articles(p):
     """ Get all articles """
-
-    all_articles = Article.get_articles_by_author(author_id=p.id)
+    user = User.get_user(id=p.id)
+    all_articles = user.articles
     article_dump = ArticleSchema().dump(all_articles, many=True)
     return APIResponse.respond(article_dump)
 
@@ -20,8 +23,12 @@ def get_all_articles(p):
 @article_resource.route('/<int:article_id>', methods=['GET'])
 def get_article(p, article_id):
     """ Get an article by id """
-
-    article = Article.get(article_id=article_id, author_id=p.id)
+    user = User.get_user(id=p.id)
+    article = user.articles.filter_by(id=article_id).first()
+    if not article:
+        return APIResponse.respond({'message': 'Article not found'}, status_code=404)
+    
+    RecentlyViewedArticle.record_view(user_id=p.id, article_id=article.id)
     article_dump = ArticleSchema().dump(article)
     return APIResponse.respond(article_dump)
 
@@ -39,6 +46,7 @@ def create_article(p, incoming_payload):
     article = ArticleCreateSchema().load(incoming_payload)
     article.author_id = p.id
     article.save()
+    RecentlyViewedArticle.record_view(user_id=p.id, article_id=article.id)
     article_dump = ArticleSchema().dump(article)
     return APIResponse.respond(article_dump)
 
@@ -51,7 +59,7 @@ def update_article(p, incoming_payload):
     article = Article.get(article_id=updated_article_obj.id, author_id=p.id)
 
     article = article.edit(updated_article_obj, p.id)
-
+    RecentlyViewedArticle.record_view(user_id=p.id, article_id=article.id)
     article_dump = ArticleSchema().dump(article)
     return APIResponse.respond(article_dump)
 
@@ -65,3 +73,15 @@ def delete_article(p, incoming_payload):
     
     Article.delete(article_id=article_id, author_id=p.id)
     return APIResponse.respond({'message': 'Article deleted successfully'})
+
+
+@article_resource.route('/recently-viewed', methods=['GET'])
+def get_recently_viewed_articles(p):
+    """ Get recently viewed articles by user """
+
+    recently_viewed = RecentlyViewedArticle.get_recently_viewed(user_id=p.id, limit=RECENTLY_VIEWED_ARTICLES_LIMIT)
+    if not recently_viewed:
+        return APIResponse.respond({'message': 'No recently viewed articles'}, status_code=200)
+    
+    recently_viewed_dump = RecentlyViewedArticleSchema(many=True).dump(recently_viewed)
+    return APIResponse.respond(recently_viewed_dump)
