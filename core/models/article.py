@@ -8,7 +8,6 @@ class Article(db.Model):
     title = db.Column(db.String(100), nullable=False, unique= True)
     content = db.Column(db.Text, nullable=False)
     author_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    author = db.relationship('User', back_populates='articles')
     recently_viewed_articles = db.relationship('RecentlyViewedArticle', backref='article', lazy=True)
 
     def __repr__(self):

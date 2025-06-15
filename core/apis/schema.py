@@ -1,6 +1,6 @@
 from marshmallow import EXCLUDE, post_load
 from marshmallow_sqlalchemy import SQLAlchemyAutoSchema, auto_field
-from models.article import Article
+from core.models.article import Article
 from core.models.user import User
 from core.models.recently_viewed_article import RecentlyViewedArticle
 
