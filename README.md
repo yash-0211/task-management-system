@@ -1,4 +1,4 @@
-# Task Management System
+# Content Management System
 
 Design and implement a backend service that allows users to create, view, update, delete, and
 list articles.
@@ -35,7 +35,7 @@ The service should also track and expose the “recently viewed” articles per 
     -   **Request Body:** `{"username": "new_username", "password": "new_password"}`
     -   **Response:** `{"token": "your_jwt_token"}`
 
-### Article Endpoints (Requires Authentication Token in `Authorization: Bearer <token>` Header)
+### Article API Endpoints (Requires Authentication Token in Header `Authorization: Bearer <token>` )
 
 -   `GET /article/`: Get all articles for the authenticated user.
     -   **Response:** `[{"id": 1, "title": "Article 1", "content": "Content 1", "author_id": 1}, ...]`
