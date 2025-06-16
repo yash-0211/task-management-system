@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - "5000:5000"
+    volumes:
+      - .:/app
+    environment:
+      FLASK_ENV: development
+      FLASK_APP: core/server.py
+      POSTGRES_USERNAME: postgres
+      POSTGRES_PASSWORD: Yash123
+      DBNAME: content_management
+      SECRET_KEY: 763ac723f7dd4f6887a4533f2ce6e466
+    command: flask run --host=0.0.0.0
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:13
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Yash123
+      POSTGRES_DB: content_management
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432" 
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  db_data:
+
+
