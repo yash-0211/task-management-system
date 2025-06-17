@@ -11,3 +11,4 @@ COPY . .
 EXPOSE 5000
 
 ENV FLASK_APP=core.server.py
+CMD flask db upgrade && flask run --host=0.0.0.0
