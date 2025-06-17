@@ -94,3 +94,26 @@ def get_recently_viewed_articles(**kwargs):
     
     recently_viewed_dump = RecentlyViewedArticleSchema(many=True).dump(recently_viewed)
     return APIResponse.respond(recently_viewed_dump)
+
+
+@article_resource.route('/paginated', methods=['GET'])
+@token_required
+def get_paginated_articles(**kwargs):
+    """ Get all articles with pagination """
+    user_id = kwargs['user_id'].id
+    user = User.get_user(id=user_id)
+    
+    page = request.args.get('page', 1, type=int)
+    page_size = request.args.get('page_size', 10, type=int)
+
+    paginated_articles = user.articles.paginate(page=page, per_page=page_size, error_out=False)
+    
+    article_dump = ArticleSchema().dump(paginated_articles.items, many=True)
+    
+    return APIResponse.respond({
+        'articles': article_dump,
+        'total_pages': paginated_articles.pages,
+        'current_page': paginated_articles.page,
+        'total_articles': paginated_articles.total,
+        'has_next': paginated_articles.has_next
+    })
