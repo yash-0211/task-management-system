@@ -2,7 +2,7 @@
 
 Design and implement a backend service that allows users to create, view, update, delete, and
 list articles.
-The service should also track and expose the “recently viewed” articles per user.
+The service should also track and expose the "recently viewed" articles per user.
 ## How to run with Docker
 
 1. Make sure you have Docker installed.
